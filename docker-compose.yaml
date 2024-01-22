@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  beefyapi:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    environment:
+      - NODE_ENV=production
+      - PROVIDER_URL=${PROVIDER_URL}
+    volumes:
+      - ./api:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: always
+
+  beefyfront:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    environment:
+      - API_URL=${API_URL}
+      - API_PORT=${API_PORT}
+    ports:
+      - "${FRONT_PORT}:3000"
+    restart: always
