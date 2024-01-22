@@ -25,7 +25,7 @@ async function fetchData() {
 }
 
 const fetchStatus = async () => {
-  const apiUrl = process.env.API_URL || "http://localhost:4000/api/status"; // Fallback to localhost if not set
+  const apiUrl = process.env.BEEFY_STATUS_URL || "http://localhost:4000/api/status"; // Fallback to localhost if not set
   try {
     const response = await fetch(apiUrl);
     if (!response.ok) {
