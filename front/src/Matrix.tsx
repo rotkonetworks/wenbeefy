@@ -28,40 +28,42 @@ const MatrixRain = () => {
     let frameCount = 0;
     const updateInterval = 2; // Update every 5 frames
 
+    const randomClearInterval = () => Math.floor(Math.random() * 50) + 50; // Clear at random intervals between 50 and 100 frames
+
+    let clearAtFrame = randomClearInterval(); // Decide the next frame to clear the canvas completely
+
+
     const draw = () => {
+      if (frameCount >= clearAtFrame) {
+        // Occasionally clear the canvas completely
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        clearAtFrame = frameCount + randomClearInterval(); // Schedule the next clear
+      } else {
+        // Regular fading
         ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = color;
-        ctx.font = `${fontSize}px arial`;
+      }
 
-        for (let i = 0; i < drops.length; i++) {
-                // Randomly choose an update interval between 2 and 4 for each drop
-                const updateInterval = Math.floor(Math.random() * 3) + 2; // Generates 2, 3, or 4
+      ctx.fillStyle = color;
+      ctx.font = `${fontSize}px arial`;
 
-                if (frameCount % updateInterval === 0) {
-                    const text = chars[Math.floor(Math.random() * chars.length)];
-                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                        drops[i] = 0;
-                    }
-                    drops[i]++;
-                }
-            }
-            frameCount++;
-            animationFrameId = requestAnimationFrame(draw);
+      for (let i = 0; i < drops.length; i++) {
+        // Randomly choose an update interval between 2 and 4 for each drop
+        const updateInterval = Math.floor(Math.random() * 3) + 2; // Generates 2, 3, or 4
 
-        // if (frameCount % updateInterval === 0) {
-        //     for (let i = 0; i < drops.length; i++) {
-        //         const text = chars[Math.floor(Math.random() * chars.length)];
-        //         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        //         if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-        //             drops[i] = 0;
-        //         }
-        //         drops[i]++;
-        //     }
-        // }
-        // frameCount++;
-        // animationFrameId = requestAnimationFrame(draw);
+        if (frameCount % updateInterval === 0) {
+          const text = chars[Math.floor(Math.random() * chars.length)];
+          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
+        }
+      }
+      frameCount++;
+      animationFrameId = requestAnimationFrame(draw);
+
     };
 
     animationFrameId = requestAnimationFrame(draw);
