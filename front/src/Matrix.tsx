@@ -26,7 +26,6 @@ const MatrixRain = () => {
 
     const ctx = canvas.getContext('2d');
     let frameCount = 0;
-    const updateInterval = 2; // Update every 5 frames
 
     const randomClearInterval = () => Math.floor(Math.random() * 50) + 50; // Clear at random intervals between 50 and 100 frames
 
@@ -49,8 +48,8 @@ const MatrixRain = () => {
       ctx.font = `${fontSize}px arial`;
 
       for (let i = 0; i < drops.length; i++) {
-        // Randomly choose an update interval between 2 and 4 for each drop
-        const updateInterval = Math.floor(Math.random() * 3) + 2; // Generates 2, 3, or 4
+        // Randomly choose an update interval between 1 and 6 for each drop
+        const updateInterval = Math.floor(Math.random() * 6) + 1;
 
         if (frameCount % updateInterval === 0) {
           const text = chars[Math.floor(Math.random() * chars.length)];
