@@ -7,5 +7,5 @@ new keys so Kusama network can be upgraded and trustless bridging enabled
 to other networks.
 
 ## Donate
-[![Donate with Kusama](images/donage.png)](ksma:EtommijqrHDFWFvBxP515oUbkXx9vK2qohzrmwpCXbU7Yx2)
+[![Donate with Kusama](images/donate.png)](ksma:EtommijqrHDFWFvBxP515oUbkXx9vK2qohzrmwpCXbU7Yx2)  
 **ksma:** EtommijqrHDFWFvBxP515oUbkXx9vK2qohzrmwpCXbU7Yx2
