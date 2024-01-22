@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 4000; // Use environment variable for port
 
-app.get('/', async (req, res) => {
+app.get('/api', async (req, res) => {
     try {
         // Use dynamic import for ES Modules
         const beefy = await import('./beefy.mjs');
