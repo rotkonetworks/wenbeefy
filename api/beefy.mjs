@@ -43,11 +43,10 @@ async function fetchData(url) {
 async function fetch1KVValidators() {
     const url = 'https://raw.githubusercontent.com/w3f/1k-validators-be/master/candidates/kusama.json';
     const data = await fetchData(url);
-    return data.candidates.map(({ stash, name, riotHandle }) => ({
-        stash,
-        name,
-        matrix: riotHandle
-    }));
+    return data.candidates.reduce((acc, { stash, name, riotHandle }) => {
+        acc[stash] = { name, matrix: riotHandle };
+        return acc;
+    }, {});
 }
 
 async function fetchIdentities(addresses, providerUrl) {
@@ -72,34 +71,47 @@ async function fetchIdentities(addresses, providerUrl) {
     return identities;
 }
 
-async function fetchDummyValidatorsAndIdentities() {
-    const dummyUrl = 'https://kusama-staging.w3f.community/validators/beefy/dummy';
-    const dummyValidators = await fetchData(dummyUrl)
+async function fetchDataAndUpdateCache(cache) {
+    const validators1kvMap = await fetch1KVValidators();
+    const dummyValidators = await fetchData('https://kusama-staging.w3f.community/validators/beefy/dummy')
         .then(data => data.map(item => item.address));
 
     const identities = await fetchIdentities(dummyValidators, 'wss://rpc.ibp.network/kusama');
 
-    return identities.map(identity => ({
-        address: identity.address,
-        name: identity.displayName,
-        email: identity.email,
-        matrix: identity.matrix
-    }));
-}
+    const candidates1kv = [];
+    const candidatesnon1kv = [];
 
-async function fetchDataAndUpdateCache(cache) {
-    const dummyValidatorIdentities = await fetchDummyValidatorsAndIdentities();
+    identities.forEach(identity => {
+        const { address, displayName, email, matrix } = identity;
+        const is1kv = validators1kvMap.hasOwnProperty(address);
 
-    cache.setCachedData('main', dummyValidatorIdentities);
-    return dummyValidatorIdentities;
+        const validatorData = {
+            address,
+            name: displayName || (is1kv ? validators1kvMap[address].name : ''),
+            email,
+            matrix: matrix || (is1kv ? validators1kvMap[address].matrix : '')
+        };
+
+        if (is1kv) {
+            candidates1kv.push(validatorData);
+        } else {
+            candidatesnon1kv.push(validatorData);
+        }
+    });
+
+    const output = { candidates1kv, candidatesnon1kv };
+    cache.setCachedData('main', output);
+    return output;
 }
 
 async function main(cache) {
     if (cache.isStale('main')) {
         console.log("Cache is stale. Fetching new data...");
+        // Wait for cache update if no data is available
         if (!cache.getCachedData('main')) {
             await fetchDataAndUpdateCache(cache);
         } else {
+            // Update cache in background if stale data is available
             fetchDataAndUpdateCache(cache);
         }
     }
