@@ -8,6 +8,7 @@ app.get('/api', async (req, res) => {
         // Use dynamic import for ES Modules
         const beefy = await import('./beefy.mjs');
         const data = await beefy.main(beefy.globalCache); // Pass the globalCache to main
+        res.header('Access-Control-Allow-Origin', '*'); // Set CORS header
         res.json(data);
     } catch (error) {
         res.status(500).send(error.message);
@@ -18,6 +19,7 @@ app.get('/api/status', async (req, res) => {
     try {
         const beefy = await import('./beefy.mjs');
         const data = await beefy.status(beefy.globalCache);
+        res.header('Access-Control-Allow-Origin', '*'); // Set CORS header
         res.json(data);
     } catch (error) {
         res.status(500).send(error.message);
