@@ -88,7 +88,7 @@ async function fetchDataAndUpdateCache(cache) {
         const validatorData = {
             address,
             name: displayName || (is1kv ? validators1kvMap[address].name : ''),
-            email,
+            email: email || (is1kv ? validators1kvMap[address].email : ''),
             matrix: matrix || (is1kv ? validators1kvMap[address].matrix : '')
         };
 
@@ -102,6 +102,24 @@ async function fetchDataAndUpdateCache(cache) {
     const output = { candidates1kv, candidatesnon1kv };
     cache.setCachedData('main', output);
     return output;
+}
+
+async function fetchBeefyDataAndUpdateCache(cache) {
+    const beefyDataUrl = 'https://kusama.w3f.community/validators/beefy';
+    const beefyData = await fetchData(beefyDataUrl);
+
+    cache.setCachedData('beefyStatus', beefyData);
+    return beefyData;
+}
+
+async function status(cache) {
+    if (cache.isStale('beefyStatus')) {
+        console.log("Beefy cache is stale. Fetching new data...");
+        return await fetchBeefyDataAndUpdateCache(cache);
+    }
+
+    console.log("Returning cached Beefy data");
+    return cache.getCachedData('beefyStatus');
 }
 
 async function main(cache) {
@@ -126,4 +144,4 @@ async function main(cache) {
     }
 }
 
-export { main, globalCache };
+export { main, status, globalCache };

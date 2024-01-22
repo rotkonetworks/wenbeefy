@@ -14,6 +14,16 @@ app.get('/api', async (req, res) => {
     }
 });
 
+app.get('/api/status', async (req, res) => {
+    try {
+        const beefy = await import('./beefy.mjs');
+        const data = await beefy.status(beefy.globalCache);
+        res.json(data);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
 app.listen(port, () => {
     console.log(`API server running at http://0.0.0.0:${port}`);
 });
