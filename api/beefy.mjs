@@ -72,36 +72,34 @@ async function fetchIdentities(addresses, providerUrl) {
     return identities;
 }
 
-async function fetchDataAndUpdateCache(cache) {
-    const validators1kv = await fetch1KVValidators();
-    const nonRotatedValidators = await fetchData('https://kusama-staging.w3f.community/validators/beefy/dummy')
+async function fetchDummyValidatorsAndIdentities() {
+    const dummyUrl = 'https://kusama-staging.w3f.community/validators/beefy/dummy';
+    const dummyValidators = await fetchData(dummyUrl)
         .then(data => data.map(item => item.address));
 
-    const non1kvValidators = nonRotatedValidators.filter(validator =>
-        !validators1kv.some(v1kv => v1kv.stash === validator));
+    const identities = await fetchIdentities(dummyValidators, 'wss://rpc.ibp.network/kusama');
 
-    const non1kvIdentities = await fetchIdentities(non1kvValidators, 'wss://rpc.ibp.network/kusama');
-
-    const candidatesnon1kv = non1kvIdentities.map(identity => ({
+    return identities.map(identity => ({
         address: identity.address,
         name: identity.displayName,
         email: identity.email,
         matrix: identity.matrix
     }));
+}
 
-    const output = { candidates1kv: validators1kv, candidatesnon1kv };
-    cache.setCachedData('main', output);
-    return output;
+async function fetchDataAndUpdateCache(cache) {
+    const dummyValidatorIdentities = await fetchDummyValidatorsAndIdentities();
+
+    cache.setCachedData('main', dummyValidatorIdentities);
+    return dummyValidatorIdentities;
 }
 
 async function main(cache) {
     if (cache.isStale('main')) {
         console.log("Cache is stale. Fetching new data...");
-        // Wait for cache update if no data is available
         if (!cache.getCachedData('main')) {
             await fetchDataAndUpdateCache(cache);
         } else {
-            // Update cache in background if stale data is available
             fetchDataAndUpdateCache(cache);
         }
     }
