@@ -48,7 +48,7 @@ export default function App() {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-        <main class="margin-0 w-full h-full overflow-hidden">
+        <main class="margin-0 overflow-hidden">
         <MatrixRain/>
           <div class="container text-pink-100 text-lg mx-auto">
             <h1 class="text-pink-500 text-8xl shadow-xl">wen beefy?</h1>
