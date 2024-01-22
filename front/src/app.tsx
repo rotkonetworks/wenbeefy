@@ -53,7 +53,7 @@ export default function App() {
           <div class="container text-pink-100 text-lg mx-auto">
             <h1 class="text-pink-500 text-8xl shadow-xl">wen beefy?</h1>
             <div>
-              <p class="p-8 w-4/5 md:w-3/5 xl:w-1/2 bg-red-300 bg-blur bg-opacity-85">
+              <p class="p-8 w-4/5 md:w-3/5 xl:w-1/2 bg-#552BBF bg-blur bg-opacity-85">
                 <span class="text-bold">Ahoy validator, chaos awaits!</span> We've compiled a 'List of Shame' — not as harsh as it sounds, promise.
                 It's just a nudge for those who haven't rotated their validator keys for the upcoming upgrade.
                 Simple check: search your validator ID below. If you find yourself on the list, no sweat.
@@ -77,7 +77,7 @@ export default function App() {
             <div class="table-container flex flex-col">
               <For each={filteredCandidates()}>
                 {candidate => (
-                  <div class="table-row flex flex-row p-4 m-4 bg-pink-200 bg-opacity-50 bg-blur overflow-auto">
+                  <div class="table-row flex flex-row p-4 m-4 bg-#00B2FF bg-opacity-50 bg-blur overflow-auto">
                     <div>{candidate.name}</div>
                     <div>{candidate.stash || candidate.address}</div>
                     <div>{candidate.matrix}</div>
