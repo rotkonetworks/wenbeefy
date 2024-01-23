@@ -102,27 +102,37 @@ const BeefyStatusSlider = (props) => {
 };
 
 export default function App() {
-  const [data, set_data ] = createResource(fetchData);
-  const [status, { refetch }] = createResource(fetchStatus);
+  const [data, { refetch: refetchData }] = createResource(fetchData);
+  const [status, { refetch: refetchStatus }] = createResource(fetchStatus);
   const [show1kv, setShow1kv] = createSignal(true);
   const [searchQuery, setSearchQuery] = createSignal("");
 
   const count1kv = () => data()?.candidates1kv?.length || 0;
   const countNon1kv = () => data()?.candidatesnon1kv?.length || 0;
 
-  // Load beefy status from API
+  // Define the refresh interval for fetching data
+  const refreshInterval = 60000; // 60 seconds
+
+  // Automatically refetch data and status at the specified interval
   createEffect(() => {
-    fetchStatus().then(data => {
-      if (data && data.activeBeefyPercentage !== undefined) {
-        setBeefyStatus(data.activeBeefyPercentage);
-      } else {
-        console.error("Invalid data format received from API");
-        // Optionally set a default or error state here
-      }
-    }).catch(error => {
-        console.error("Error fetching beefy status:", error);
-        // Optionally set a default or error state here
-      });
+    // Initial fetch
+    refetchData();
+    refetchStatus();
+
+    // Set up intervals for continuous updating
+    const dataInterval = setInterval(() => {
+      refetchData();
+    }, refreshInterval);
+
+    const statusInterval = setInterval(() => {
+      refetchStatus();
+    }, refreshInterval);
+
+    // Clean up the intervals when the component is unmounted
+    return () => {
+      clearInterval(dataInterval);
+      clearInterval(statusInterval);
+    };
   });
 
   const filteredCandidates = () => {
