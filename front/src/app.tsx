@@ -181,7 +181,7 @@ export default function App() {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <For each={filteredCandidates()}>
                 {candidate => (
-                  <div class="flex flex-col bg-blue-500 bg-opacity-30 backdrop-blur shadow-lg rounded-lg p-4 m-4 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-2xl">
+                  <div class="flex flex-col bg-blue-500 bg-opacity-30 backdrop-blur shadow-lg rounded-lg p-4 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-2xl">
                     <div class="flex items-center text-gray-100 mb-2">
                       <i class="i-bi-person-fill mr-2"></i>
                       <span>{candidate.name}</span>
