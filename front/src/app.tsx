@@ -7,6 +7,7 @@ import MatrixRain from './Matrix';
 interface Candidate {
   name?: string;
   stash?: string;
+  email?: string;
   matrix?: string;
 }
 
@@ -40,7 +41,6 @@ const fetchStatus = async () => {
 
 const BeefyStatusSlider = (props) => {
   const percentage = props.percentage;
-  const name = props.name;
 
   // Determine the color of the slider based on the percentage
   let sliderColor;
@@ -94,7 +94,7 @@ const BeefyStatusSlider = (props) => {
         style={{ width: `${percentage}%` }}
       >
         <span class="absolute text-sm text-bold text-blue-900 left-1/2 transform -translate-x-1/2">
-          activeBeefyPercentage: {percentage.toFixed(2)}%
+          activeBeefy: {percentage.toFixed(2)}%
         </span>
       </div>
     </div>
@@ -143,7 +143,8 @@ export default function App() {
     return candidates.filter((candidate: Candidate) => 
       candidate.name?.toLowerCase().includes(query) ||
         candidate.stash?.toLowerCase().includes(query) ||
-        (typeof candidate.matrix === 'string' && candidate.matrix.toLowerCase().includes(query))
+        (typeof candidate.matrix === 'string' && candidate.matrix.toLowerCase().includes(query)) ||
+        candidate.email?.toLowerCase().includes(query)
     );
   };
 
@@ -163,7 +164,7 @@ export default function App() {
               but a giant leap for the network. Let's keep the gears turning smoothly!
             </p>
           </div>
-          <div class="flex justify-center">
+          <div class="flex justify-center mb-4">
             <input
               class="search-field w-7/10 px-4 mr-8 py-2 bg-gray-100 rounded-lg border-1 border-gray-300"
               type="text"
@@ -176,16 +177,31 @@ export default function App() {
               {show1kv() ? `1KV (${count1kv()})` : `Non-1KV (${countNon1kv()})`}
             </button>
           </div>
-          <div class="table-container flex flex-col">
-            <For each={filteredCandidates()}>
-              {candidate => (
-                <div class="table-row flex flex-row p-4 m-4 bg-#00B2FF backdrop-blur bg-opacity-30 bg-blur overflow-auto">
-                  <div>{candidate.name}</div>
-                  <div>{candidate.stash || candidate.address}</div>
-                  <div>{candidate.matrix}</div>
-                </div>
-              )}
-            </For>
+          <div class="flex flex-col">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <For each={filteredCandidates()}>
+                {candidate => (
+                  <div class="flex flex-col bg-blue-500 bg-opacity-30 backdrop-blur shadow-lg rounded-lg p-4 m-4 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-2xl">
+                    <div class="flex items-center text-gray-100 mb-2">
+                      <i class="i-bi-person-fill mr-2"></i>
+                      <span>{candidate.name}</span>
+                    </div>
+                    <div class="flex items-center text-gray-100 mb-2">
+                      <i class="i-bi-wallet2 mr-2"></i>
+                      <span class="overflow-auto">{candidate.stash || candidate.address}</span>
+                    </div>
+                    <div class="flex items-center text-gray-100 mb-2">
+                      <i class="i-bi-chat-left-text-fill mr-2"></i>
+                      <span>{candidate.matrix}</span>
+                    </div>
+                    <div class="flex items-center text-gray-100">
+                      <i class="i-bi-envelope-fill mr-2"></i>
+                      <span>{candidate.email}</span>
+                    </div>
+                  </div>
+                )}
+              </For>
+            </div>
           </div>
         </div>
       </main>
