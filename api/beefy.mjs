@@ -2,7 +2,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import fetch from 'node-fetch';
 
 class Cache {
-    constructor(ttl = 36000000) { // 1 hour
+    constructor(ttl = 600000) { // 10m min
         this.ttl = ttl;
         this.data = {};
     }
