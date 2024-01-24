@@ -49,6 +49,7 @@ async function fetch1KVValidators() {
     }, {});
 }
 
+
 async function fetchIdentities(addresses, providerUrl) {
     const provider = new WsProvider(providerUrl);
     const api = await ApiPromise.create({ provider });
@@ -78,9 +79,11 @@ async function fetchIdentities(addresses, providerUrl) {
             const superOf = await api.query.identity.superOf(address);
             if (superOf.isSome) {
                 const parentAddress = superOf.unwrap()[0].toString();
-                return fetchIdentity(parentAddress); // Recursively fetch parent identity
+                const parentIdentity = await fetchIdentity(parentAddress);
+                // Use the original address, but parent's identity details
+                parentIdentity.address = address;
+                return parentIdentity;
             }
-
             return {
                 address,
                 judgements: [],
