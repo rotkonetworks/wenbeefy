@@ -205,7 +205,7 @@ export default function App() {
       <main class="margin-0 overflow-hidden">
         <MatrixRain/>
         <div class="container text-pink-100 text-lg mx-auto">
-        <h1 class="text-pink-500 text-4xl md:text-6xl lg:text-8xl shadow-xl">wen beefy?</h1>
+        <h1 class="text-pink-500 text-6xl md:text-7xl lg:text-8xl shadow-xl">wen beefy?</h1>
           <div class="w-4/5 md:w-3/5 xl:w-1/2 flex flex-col mx-auto">
             <BeefyStatusSlider percentage={status()?.activeBeefyPercentage || 0} />
             <p class="p-4 xl:p-6 text-xs md:text-sm lg:text-md bg-#552BBF backdrop-blur bg-opacity-30">
