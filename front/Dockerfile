@@ -16,17 +16,17 @@ COPY . .
 # Build your app
 RUN npm run build
 
-# Final Stage: Running the Nitro server
+# Stage 2: Final stage to run the Node.js app
 FROM node:21-alpine
 
-# Set the working directory
+# Set up working directory for Node.js app
 WORKDIR /app
 
-# Copy the built app from the builder stage
+# Copy the built Node.js app from the builder stage
 COPY --from=builder /app/.output /app
 
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Run the Nitro server
-CMD ["node", "./server/index.mjs"]
+# Run the Node.js server
+CMD ["node", "/app/server/index.mjs"]
