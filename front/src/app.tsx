@@ -205,11 +205,11 @@ export default function App() {
       <main class="margin-0 overflow-hidden">
         <MatrixRain/>
         <div class="container text-pink-100 text-lg mx-auto">
-          <h1 class="text-pink-500 text-8xl shadow-xl">wen beefy?</h1>
+        <h1 class="text-pink-500 text-4xl md:text-6xl lg:text-8xl shadow-xl">wen beefy?</h1>
           <div class="w-4/5 md:w-3/5 xl:w-1/2 flex flex-col mx-auto">
             <BeefyStatusSlider percentage={status()?.activeBeefyPercentage || 0} />
-            <p class="p-8 bg-#552BBF backdrop-blur bg-opacity-30">
-              <span class="text-bold">Ahoy validator, chaos awaits!</span> We've compiled a 'List of Shame' — not as harsh as it sounds, promise.
+            <p class="p-4 xl:p-6 text-xs md:text-sm lg:text-md bg-#552BBF backdrop-blur bg-opacity-30">
+              <span class="font-semibold">Ahoy validator, chaos awaits!</span> We've compiled a 'List of Shame' — not as harsh as it sounds, promise.
               It's just a nudge for those who haven't rotated their validator keys for the upcoming upgrade.
               Simple check: search your validator ID below. If you find yourself on the list, no sweat.
               Just rotate your keys pronto and set them onchain. It's a small step for you,
@@ -223,7 +223,7 @@ export default function App() {
               placeholder="Search..."
               onInput={(e) => setSearchQuery(e.target.value)}
             />
-            <button 
+            <button
               class="w-2/10 px-4 py-2 bg-#D3FF33 bg-opacity-40 hover:bg-opacity-50 backdrop-blur hover:backdrop-blur text-white font-semibold rounded-lg shadow-md hover:bg-#56F39A focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 toggle" 
               onClick={handleToggleClick}>
               {getButtonLabel()}
