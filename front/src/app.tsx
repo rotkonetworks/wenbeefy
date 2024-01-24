@@ -13,6 +13,7 @@ interface Validator {
   matrix?: string;
   twitter?: string;
   web?: string;
+  judgements: Array<[string, string]>;
 }
 
 // Define the states
@@ -238,7 +239,22 @@ export default function App() {
                       <div class="flex items-center text-gray-100 mb-2">
                         <i class="i-bi-person-fill mr-2"></i>
                         <span>{validator.identity}</span>
-                        {validator.is1kv && <span class="text-xs px-2 py-1 bg-pink-800 shadow rounded text-white absolute top-4 right-4 bg-opacity-50">1kv</span>}
+                        <div class="top-4 right-4 absolute">
+                          {validator.is1kv && (
+                            <span 
+                              title="Thousand Validator Program Member"
+                              class="text-xs px-2 py-1 bg-pink-800 shadow rounded text-white bg-opacity-50 mr-2">
+                                1kv
+                            </span>
+                          )}
+                          {validator.judgements && validator.judgements.some(j => j[1] === "Reasonable" || j[1] === "KnownGood") && (
+                            <span 
+                              title="Verified Identity"
+                              class="text-xs px-2 py-1 bg-pink-800 shadow rounded text-white bg-opacity-50">
+                                <span class="i-bi-person-check-fill"></span>
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                     {validator.nodeName && (
