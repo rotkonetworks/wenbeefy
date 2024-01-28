@@ -169,7 +169,7 @@ async function fetchDataAndUpdateCache(cache) {
 }
 
 async function fetchBeefyDataAndUpdateCache(cache) {
-  const beefyDataUrl = 'https://kusama.w3f.community/validators/beefy';
+  const beefyDataUrl = 'https://kusama-staging.w3f.community/validators/beefy';
   const beefyData = await fetchData(beefyDataUrl);
 
   cache.setCachedData('beefyStatus', beefyData);
