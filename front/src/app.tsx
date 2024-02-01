@@ -24,9 +24,13 @@ const DisplayStates = {
 };
 
 async function fetchData() {
-  const apiUrl = process.env.API_URL || "http://localhost:4000/api"; // Fallback to localhost if not set
+  const apiUrl = "https://beefy.rotko.net/api"; 
   try {
-    const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
@@ -34,7 +38,7 @@ async function fetchData() {
     return data;
   } catch (error) {
     console.error("Failed to fetch data:", error);
-    return null; // Return null in case of error
+    return null;
   }
 }
 
