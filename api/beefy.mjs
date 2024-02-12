@@ -2,112 +2,117 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import fetch from 'node-fetch';
 
 class Cache {
-    constructor(ttl = 600000) { // 10 min
-        this.ttl = ttl;
-        this.data = {};
-    }
+  constructor(ttl = 600000) { // 10 min
+    this.ttl = ttl;
+    this.data = {};
+  }
 
-    getCachedData(key) {
-        const cachedData = this.data[key];
-        if (cachedData) {
-            return cachedData.data;
-        }
-        return null;
+  getCachedData(key) {
+    const cachedData = this.data[key];
+    if (cachedData) {
+      return cachedData.data;
     }
+    return null;
+  }
 
-    setCachedData(key, data) {
-        this.data[key] = { data, timestamp: new Date().getTime() };
-    }
+  setCachedData(key, data) {
+    this.data[key] = { data, timestamp: new Date().getTime() };
+  }
 
-    isStale(key) {
-        const now = new Date().getTime();
-        const cachedData = this.data[key];
-        if (cachedData) {
-            return now - cachedData.timestamp >= this.ttl;
-        }
-        return true;
+  isStale(key) {
+    const now = new Date().getTime();
+    const cachedData = this.data[key];
+    if (cachedData) {
+      return now - cachedData.timestamp >= this.ttl;
     }
+    return true;
+  }
 }
 
 let globalCache = new Cache();
 
 function hexToString(hex) {
-    return Buffer.from(hex.substring(2), 'hex').toString();
+  return Buffer.from(hex.substring(2), 'hex').toString();
 }
 
 async function fetchData(url) {
-    const response = await fetch(url);
-    return response.json();
+  const response = await fetch(url);
+  return response.json();
 }
 
 async function fetch1KVValidators() {
-    const url = 'https://raw.githubusercontent.com/w3f/1k-validators-be/master/candidates/kusama.json';
-    const data = await fetchData(url);
-    return data.candidates.reduce((acc, { stash, name, riotHandle }) => {
-        acc[stash] = { name, matrix: riotHandle };
-        return acc;
-    }, {});
+  const url = 'https://raw.githubusercontent.com/w3f/1k-validators-be/master/candidates/kusama.json';
+  const data = await fetchData(url);
+  return data.candidates.reduce((acc, { stash, name, riotHandle }) => {
+    acc[stash] = { name, matrix: riotHandle };
+    return acc;
+  }, {});
 }
 
 
 async function fetchIdentities(addresses, providerUrl) {
-    const provider = new WsProvider(providerUrl);
-    const api = await ApiPromise.create({ provider });
+  const provider = new WsProvider(providerUrl);
+  const api = await ApiPromise.create({ provider });
 
-    async function fetchIdentity(address) {
-        const identity = await api.query.identity.identityOf(address);
+  const currentValidators = await api.query.session.validators();
 
-        if (identity.isSome) {
-            const { judgements, deposit, info } = identity.unwrap();
-            const { display, legal, web, riot, email, pgpFingerprint, image, twitter } = info;
+  async function fetchIdentity(address) {
+    const identity = await api.query.identity.identityOf(address);
+    const isActiveValidator = currentValidators.some(validator => validator.toString() === address);
 
-            return {
-                address,
-                judgements: judgements.map(j => [j[0].toString(), j[1].toString()]),
-                deposit: deposit.toString(),
-                displayName: display.isRaw ? hexToString(display.asRaw.toHex()) : '',
-                legal: legal.isRaw ? hexToString(legal.asRaw.toHex()) : '',
-                web: web.isRaw ? hexToString(web.asRaw.toHex()) : '',
-                matrix: riot.isRaw ? hexToString(riot.asRaw.toHex()) : '',
-                email: email.isRaw ? hexToString(email.asRaw.toHex()) : '',
-                pgpFingerprint: pgpFingerprint ? hexToString(pgpFingerprint.toHex()) : '',
-                image: image.isRaw ? hexToString(image.asRaw.toHex()) : '',
-                twitter: twitter.isRaw ? hexToString(twitter.asRaw.toHex()) : ''
-            };
-        } else {
-            // Check if it's a sub-identity and fetch the parent identity
-            const superOf = await api.query.identity.superOf(address);
-            if (superOf.isSome) {
-                const parentAddress = superOf.unwrap()[0].toString();
-                const parentIdentity = await fetchIdentity(parentAddress);
-                // Use the original address, but parent's identity details
-                parentIdentity.address = address;
-                return parentIdentity;
-            }
-            return {
-                address,
-                judgements: [],
-                deposit: '',
-                displayName: '',
-                legal: '',
-                web: '',
-                matrix: '',
-                email: '',
-                pgpFingerprint: '',
-                image: '',
-                twitter: ''
-            };
-        }
+    if (identity.isSome) {
+      const { judgements, deposit, info } = identity.unwrap();
+      const { display, legal, web, riot, email, pgpFingerprint, image, twitter } = info;
+
+      return {
+        address,
+        isActiveValidator,
+        judgements: judgements.map(j => [j[0].toString(), j[1].toString()]),
+        deposit: deposit.toString(),
+        displayName: display.isRaw ? hexToString(display.asRaw.toHex()) : '',
+        legal: legal.isRaw ? hexToString(legal.asRaw.toHex()) : '',
+        web: web.isRaw ? hexToString(web.asRaw.toHex()) : '',
+        matrix: riot.isRaw ? hexToString(riot.asRaw.toHex()) : '',
+        email: email.isRaw ? hexToString(email.asRaw.toHex()) : '',
+        pgpFingerprint: pgpFingerprint ? hexToString(pgpFingerprint.toHex()) : '',
+        image: image.isRaw ? hexToString(image.asRaw.toHex()) : '',
+        twitter: twitter.isRaw ? hexToString(twitter.asRaw.toHex()) : ''
+      };
+    } else {
+      // Check if it's a sub-identity and fetch the parent identity
+      const superOf = await api.query.identity.superOf(address);
+      if (superOf.isSome) {
+        const parentAddress = superOf.unwrap()[0].toString();
+        const parentIdentity = await fetchIdentity(parentAddress);
+        // Use the original address, but parent's identity details
+        parentIdentity.address = address;
+        return parentIdentity;
+      }
+      return {
+        address,
+        isActiveValidator,
+        judgements: [],
+        deposit: '',
+        displayName: '',
+        legal: '',
+        web: '',
+        matrix: '',
+        email: '',
+        pgpFingerprint: '',
+        image: '',
+        twitter: ''
+      };
     }
+  }
 
-    let allIdentities = [];
-    for (const address of addresses) {
-        const identity = await fetchIdentity(address);
-        allIdentities.push(identity);
-    }
+  let allIdentities = [];
+  for (const address of addresses) {
+    const identity = await fetchIdentity(address);
+    allIdentities.push(identity);
+  }
 
-    await api.disconnect();
-    return allIdentities;
+  await api.disconnect();
+  return allIdentities;
 }
 
 async function fetchDataAndUpdateCache(cache) {
@@ -123,6 +128,7 @@ async function fetchDataAndUpdateCache(cache) {
   identities.forEach(identity => {
     const {
       address,
+      isActiveValidator,
       displayName,
       email,
       matrix,
@@ -139,7 +145,8 @@ async function fetchDataAndUpdateCache(cache) {
 
     let validatorData = {
       address,
-      is1kv: is1kv
+      is1kv: is1kv,
+      isActiveValidator: identity.isActiveValidator
     };
 
     // Add fields only if they have data
