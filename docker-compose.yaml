@@ -21,7 +21,6 @@ services:
     environment:
       - API_URL=${API_URL}
       - API_PORT=${API_PORT}
-      - BEEFY_STATUS_URL=${BEEFY_STATUS_URL}
     restart: always
 
   nginx:

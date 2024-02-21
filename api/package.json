@@ -3,6 +3,7 @@
     "@polkadot/api": "^10.11.2",
     "cache-manager": "^5.4.0",
     "cache-manager-fs-hash": "^1.0.0",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "node-fetch": "^3.3.2"
   }
