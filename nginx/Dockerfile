@@ -1,5 +1,6 @@
 # Stage 1: Build Brotli module for Nginx
-FROM nginx:alpine as nginx-builder
+# FROM nginx:alpine as nginx-builder
+FROM nginx:1.25.3-alpine as nginx-builder
 
 # Install build dependencies
 RUN apk update \
@@ -23,7 +24,8 @@ RUN cd /usr/src \
     && cp objs/ngx_http_brotli_static_module.so /usr/lib/nginx/modules/
 
 # Stage 2: Final Nginx with Brotli
-FROM nginx:alpine
+# FROM nginx:alpine
+FROM nginx:1.25.3-alpine
 
 # Install runtime dependencies for Brotli
 RUN apk add --no-cache brotli brotli-dev
