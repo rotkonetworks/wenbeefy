@@ -45,57 +45,15 @@ async function fetchData(network: string): Promise<Validator[] | null> {
 }
 
 async function fetchStatus(network: string): Promise<StatusResponse> {
-  const apiUrl = `${apiUrlBase[network]}/status`;
   try {
-    const response = await fetch(apiUrl);
+    const response = await fetch(`${apiUrlBase[network]}/status`, { headers: { 'Cache-Control': 'no-cache' } });
     if (!response.ok) throw new Error("Network response was not ok");
-    return await response.json() as StatusResponse;
+    return await response.json();
   } catch (error) {
     console.error(`Failed to fetch status for ${network}:`, error);
     return { activeBeefyPercentage: 0 };
   }
 }
-
-const BeefyStatusSlider = (props: { percentage: number }) => {
-  const { percentage } = props;
-
-  let sliderColor;
-
-  if (percentage <= 5) {
-    sliderColor = 'bg-red-600'; // Medium Red
-  } else if (percentage <= 20) {
-    sliderColor = 'bg-red-500'; // Lightest Red
-  } else if (percentage <= 30) {
-    sliderColor = 'bg-orange-600'; // Less Dark Orange
-  } else if (percentage <= 40) {
-    sliderColor = 'bg-orange-400'; // Light Orange
-  } else if (percentage <= 50) {
-    sliderColor = 'bg-yellow-600'; // Dark Yellow
-  } else if (percentage <= 60) {
-    sliderColor = 'bg-yellow-500'; // Medium Yellow
-  } else if (percentage <= 70) {
-    sliderColor = 'bg-yellow-400'; // Lightest Yellow
-  } else if (percentage <= 80) {
-    sliderColor = 'bg-lime-400'; // Less Dark Lime
-  } else if (percentage <= 90) {
-    sliderColor = 'bg-lime-500'; // Dark Green
-  } else {
-    sliderColor = 'bg-green-500'; // Darkest Green
-  }
-
-  return (
-    <div class="w-full bg-gray-200 rounded-full h-6 dark:bg-gray-700 overflow-hidden relative">
-      <div
-        class={`h-full rounded-full ${sliderColor} transition-all duration-300 ease-in-out`}
-        style={{ width: `${percentage}%` }}
-      >
-        <span class="absolute text-sm text-bold text-blue-900 left-1/2 transform -translate-x-1/2">
-          activeBeefy: {percentage.toFixed(2)}%
-        </span>
-      </div>
-    </div>
-  );
-};
 
 export default function App() {
   const [currentNetwork, setCurrentNetwork] = createSignal("polkadot");
@@ -103,7 +61,7 @@ export default function App() {
   const [showOnlyActive, setShowOnlyActive] = createSignal(false);
   const [searchQuery, setSearchQuery] = createSignal("");
   const [data, { refetch: refetchData }] = createResource(currentNetwork, fetchData);
-  const [status, { refetch: refetchStatus }] = createResource(currentNetwork, fetchStatus);
+  const [status, setStatus] = createSignal({ activeBeefyPercentage: 0 });
 
   const toggleNetwork = () => {
     setCurrentNetwork(currentNetwork() === "polkadot" ? "kusama" : "polkadot");
@@ -126,10 +84,22 @@ export default function App() {
   const count1kv = () => data()?.filter(validator => validator.is1kv).length || 0;
   const countActive = () => data()?.filter(validator => validator.isActiveValidator).length || 0;
 
-  createEffect(() => {
-    refetchData();
-    refetchStatus();
-  }, [currentNetwork()]);
+  createEffect(async () => {
+    const refetch = refetchData();
+    const statusData = await fetchStatus(currentNetwork());
+    setStatus(statusData);
+  });
+
+  // Slider logic
+  const sliderColor = () => {
+    const percentage = status().activeBeefyPercentage;
+    if (percentage <= 5) return 'bg-red-600';
+    if (percentage <= 20) return 'bg-red-500';
+    if (percentage <= 40) return 'bg-orange-400';
+    if (percentage <= 60) return 'bg-yellow-500';
+    if (percentage <= 80) return 'bg-lime-500';
+    return 'bg-green-500';
+  };
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -138,7 +108,16 @@ export default function App() {
         <div class="container text-pink-100 text-lg mx-auto">
           <h1 class="text-pink-500 text-4xl md:text-7xl lg:text-8xl shadow-xl">wen beefy?</h1>
           <div class="w-4/5 md:w-3/5 xl:w-1/2 flex flex-col mx-auto">
-            <BeefyStatusSlider percentage={status()?.activeBeefyPercentage || 0} />
+            <div class="w-full bg-gray-200 rounded-full h-6 dark:bg-gray-700 overflow-hidden relative">
+              <div
+                class={`h-full rounded-full ${sliderColor()} transition-all duration-300 ease-in-out`}
+                style={{ width: `${status().activeBeefyPercentage}%` }}
+              >
+                <span class="absolute text-sm text-bold text-blue-900 left-1/2 transform -translate-x-1/2">
+                  Active Beefy: {status().activeBeefyPercentage.toFixed(2)}%
+                </span>
+              </div>
+            </div>
             <p class="p-4 xl:p-6 text-xs md:text-sm lg:text-md bg-#552BBF backdrop-blur bg-opacity-30">
               <span class="font-semibold">Ahoy validator, chaos awaits!</span>
               We've compiled a 'List of Shame' — not as harsh as it sounds, promise.
@@ -227,7 +206,7 @@ export default function App() {
                     {validator.judgements && validator.judgements.some(j => j[1] === "Reasonable" || j[1] === "KnownGood") && (
                       <span
                         title="Verified Identity"
-                        class="text-xs px-2 py-1 bg-green-500 shadow rounded text-white bg-opacity-50">
+                        class="text-xs px-2 py-1 bg-blue-500 shadow rounded text-white bg-opacity-50">
                         <i class="i-bi-person-check-fill"></i>
                       </span>
                     )}
