@@ -85,7 +85,6 @@ export default function App() {
   const countActive = () => data()?.filter(validator => validator.isActiveValidator).length || 0;
 
   createEffect(async () => {
-    const refetch = refetchData();
     const statusData = await fetchStatus(currentNetwork());
     setStatus(statusData);
   });
@@ -102,11 +101,15 @@ export default function App() {
   };
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<main class="margin-0 overflow-hidden"><MatrixRain /></main>}>
       <main class="margin-0 overflow-hidden">
         <MatrixRain />
         <div class="container text-pink-100 text-lg mx-auto">
-          <h1 class="text-pink-500 text-4xl md:text-7xl lg:text-8xl shadow-xl">wen beefy?</h1>
+          {currentNetwork() === "kusama" ? (
+            <h1 class="text-pink-500 text-4xl md:text-7xl lg:text-8xl shadow-xl">BEEFY Activated!</h1>
+          ) : (
+            <h1 class="text-pink-500 text-4xl md:text-7xl lg:text-8xl shadow-xl">wen beefy?</h1>
+          )}
           <div class="w-4/5 md:w-3/5 xl:w-1/2 flex flex-col mx-auto">
             <div class="w-full bg-gray-200 rounded-full h-6 dark:bg-gray-700 overflow-hidden relative">
               <div
@@ -118,14 +121,28 @@ export default function App() {
                 </span>
               </div>
             </div>
-            <p class="p-4 xl:p-6 text-xs md:text-sm lg:text-md bg-#552BBF backdrop-blur bg-opacity-30">
-              <span class="font-semibold">Ahoy validator, chaos awaits!</span>
-              We've compiled a 'List of Shame' — not as harsh as it sounds, promise.
-              It's just a nudge for those who haven't rotated their validator keys for the upcoming upgrade.
-              Simple check: search your validator ID below. If you find yourself on the list, no sweat.
-              Just rotate your keys pronto and set them onchain. It's a small step for you,
-              but a giant leap for the network. Let's keep the gears turning smoothly!
-            </p>
+            {currentNetwork() === "kusama" ? (
+              <div class="p-4 xl:p-6 bg-#56F39A text-pink-100 rounded-lg shadow-lg mx-auto my-4 xl:my-8 bg-opacity-30 backdrop-blur">
+                <p class="m-0">
+                  On February 19, 2024, we celebrated the activation of BEEFY on the Kusama network,
+                  marking the first official interchain BEEFY day. This milestone represents a
+                  significant achievement thanks to the collective effort of our community builders.
+                  We look forward to continuing our journey together, strengthening our network and
+                  embracing the possibilities of interchain communication.
+                </p>
+              </div>
+            ) : (
+              <div class="p-4 xl:p-6 bg-#552BBF text-pink-100 rounded-lg shadow-lg mx-auto my-4 xl:my-8 backdrop-blur bg-opacity-30">
+                <p class="m-0">
+                  <span class="font-semibold">Ahoy validator, chaos awaits! </span>
+                  We've compiled a 'List of Shame' — not as harsh as it sounds, promise.
+                  It's just a nudge for those who haven't rotated their validator keys for the upcoming upgrade.
+                  Simple check: search your validator ID below. If you find yourself on the list, no sweat.
+                  Just rotate your keys pronto and set them onchain. It's a small step for you,
+                  but a giant leap for the network. Let's keep the gears turning smoothly!
+                </p>
+              </div>
+            )}
           </div>
           <div class="flex justify-center items-center mb-4 space-x-4">
             <input
