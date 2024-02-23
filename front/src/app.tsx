@@ -107,9 +107,9 @@ export default function App() {
         <MatrixRain />
         <div class="container text-pink-100 text-lg mx-auto">
           {currentNetwork() === "kusama" ? (
-            <h1 class="text-pink-500 text-4xl md:text-7xl lg:text-8xl shadow-xl">BEEFY Activated!</h1>
+            <h1 class="text-pink-500 text-5xl md:text-7xl lg:text-8xl shadow-xl">BEEFY Activated!</h1>
           ) : (
-            <h1 class="text-pink-500 text-4xl md:text-7xl lg:text-8xl shadow-xl">wen beefy?</h1>
+            <h1 class="text-pink-500 text-5xl md:text-7xl lg:text-8xl shadow-xl">wen beefy?</h1>
           )}
           <div class="w-4/5 md:w-3/5 xl:w-1/2 flex flex-col mx-auto">
             <div class="w-full bg-gray-200 rounded-full h-6 dark:bg-gray-700 overflow-hidden relative">
@@ -135,7 +135,7 @@ export default function App() {
             ) : (
               <div class="p-4 xl:p-6 bg-#552BBF text-pink-100 rounded-lg shadow-lg mx-auto my-4 xl:my-8 backdrop-blur bg-opacity-30">
                 <p class="m-0">
-                  <span class="font-semibold">Ahoy validator, chaos awaits! </span>
+                  <span class="font-semibold">Ahoy Polkadot validator, chaos awaits! </span>
                   We've compiled a 'List of Shame' — not as harsh as it sounds, promise.
                   It's just a nudge for those who haven't rotated their validator keys for the upcoming upgrade.
                   Simple check: search your validator ID below. If you find yourself on the list, no sweat.
