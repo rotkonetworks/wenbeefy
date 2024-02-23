@@ -5,8 +5,9 @@ import "./app.css";
 import MatrixRain from './Matrix';
 
 
-const API_PORT = import.meta.env.VITE_API_PORT || 4000;
-const API_URL = import.meta.env.VITE_API_URL || `http://0.0.0.0:${API_PORT}/api`;
+const API_PORT = import.meta.env.API_PORT || 4000;
+//const API_URL = import.meta.env.API_URL || `http://0.0.0.0:${API_PORT}/api`;
+const API_URL = import.meta.env.API_URL || `https://beefy.rotko.net/api`;
 
 const apiUrlBase: Record<string, string> = {
   kusama: `${API_URL}/kusama`,
