@@ -120,15 +120,28 @@ async function fetchIdentity(api, address, currentValidators) {
   const identity = await api.query.identity.identityOf(address);
   const isActiveValidator = currentValidators.some(validator => validator.toString() === address);
 
-  if (!identity.isSome) {
-    return { address, isActiveValidator, judgements: [], deposit: '', displayName: '', legal: '', web: '', matrix: '', email: '', pgpFingerprint: '', image: '', twitter: '' };
-  } else {
-    const { judgements, deposit, info } = identity.unwrap();
+  // Initialize an object to hold the identity data
+  let identityData = {
+    address,
+    isActiveValidator,
+    judgements: [],
+    deposit: '',
+    displayName: '',
+    legal: '',
+    web: '',
+    matrix: '',
+    email: '',
+    pgpFingerprint: '',
+    image: '',
+    twitter: ''
+  };
+
+  if (identity.isSome) {
+    const { judgements, deposit, info, superOf } = identity.unwrap();
     const { display, legal, web, riot, email, pgpFingerprint, image, twitter } = info;
 
-    return {
-      address,
-      isActiveValidator,
+    identityData = {
+      ...identityData,
       judgements: judgements.map(j => [j[0].toString(), j[1].toString()]),
       deposit: deposit.toString(),
       displayName: display.isRaw ? hexToString(display.asRaw.toHex()) : '',
@@ -140,9 +153,18 @@ async function fetchIdentity(api, address, currentValidators) {
       image: image.isRaw ? hexToString(image.asRaw.toHex()) : '',
       twitter: twitter.isRaw ? hexToString(twitter.asRaw.toHex()) : ''
     };
-  }
-}
 
+    // If superOf is not none, it means this identity is a sub-identity.
+    if (superOf && superOf.isSome) {
+      const [parentAddress, subIdentityData] = superOf.unwrap();
+      // Fetch the parent identity and merge the parent display name with the sub-identity name
+      const parentIdentity = await fetchIdentity(api, parentAddress.toString(), currentValidators);
+      identityData.displayName = `${parentIdentity.displayName}/${hexToString(subIdentityData.asRaw.toHex())}`;
+    }
+  }
+
+  return identityData;
+}
 
 async function fetchDataAndUpdateCache(cache, network) {
   if (cache.isStale(network)) {
