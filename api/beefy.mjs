@@ -116,11 +116,13 @@ async function fetchIdentities(addresses, providerUrl) {
   }
 }
 
-
 async function fetchIdentity(api, address, currentValidators) {
+  const isActiveValidator = currentValidators.some(validator => validator.toString() === address);
+
+  // Initialize an object to hold the identity data with default values
   let identityData = {
     address,
-    isActiveValidator: currentValidators.some(validator => validator.toString() === address),
+    isActiveValidator,
     judgements: [],
     deposit: '',
     displayName: '',
@@ -133,37 +135,48 @@ async function fetchIdentity(api, address, currentValidators) {
     twitter: '',
     isSubIdentity: false,
     parentAddress: null,
-    subIdentityName: null // Additional field for sub-identity name
+    subIdentityName: null
   };
 
+  // Fetch the on-chain identity or superOf if the direct identity doesn't exist
   const identity = await api.query.identity.identityOf(address);
 
   if (identity.isSome) {
+    // Process the direct identity
     const { judgements, deposit, info } = identity.unwrap();
-    identityData.judgements = judgements.map(j => [j[0].toHuman(), j[1].toHuman()]);
-    identityData.deposit = deposit.toString();
-    identityData.displayName = info.display.isRaw ? hexToString(info.display.asRaw.toHex()) : '';
-    identityData.legal = info.legal.isRaw ? hexToString(info.legal.asRaw.toHex()) : '';
-    identityData.web = info.web.isRaw ? hexToString(info.web.asRaw.toHex()) : '';
-    identityData.matrix = info.riot.isRaw ? hexToString(info.riot.asRaw.toHex()) : '';
-    identityData.email = info.email.isRaw ? hexToString(info.email.asRaw.toHex()) : '';
-    identityData.pgpFingerprint = info.pgpFingerprint ? hexToString(info.pgpFingerprint.toHex()) : '';
-    identityData.image = info.image.isRaw ? hexToString(info.image.asRaw.toHex()) : '';
-    identityData.twitter = info.twitter.isRaw ? hexToString(info.twitter.asRaw.toHex()) : '';
+    identityData = { ...identityData, ...processIdentityInfo(info), judgements: judgements.map(j => [j[0].toHuman(), j[1].toHuman()]), deposit: deposit.toString() };
   } else {
+    // Check for a parent identity in case of a sub-identity
     const superOf = await api.query.identity.superOf(address);
     if (superOf.isSome) {
       const [parentAddress, subIdentityData] = superOf.unwrap();
       identityData.isSubIdentity = true;
       identityData.parentAddress = parentAddress.toString();
+
+      // Fetch and directly use the parent identity's data, ensuring all fields are covered
       const parentIdentityData = await fetchIdentity(api, parentAddress.toString(), currentValidators);
-      identityData.subIdentityName = subIdentityData.isRaw ? hexToString(subIdentityData.asRaw.toHex()) : '';
-      // Format displayName to include parent identity name and sub-identity name
+      identityData = { ...parentIdentityData, address, isSubIdentity: true, parentAddress: parentAddress.toString(), subIdentityName: subIdentityData.isRaw ? hexToString(subIdentityData.asRaw.toHex()) : '' };
+      
+      // Custom handling for the displayName to include sub-identity specific information
       identityData.displayName = `${parentIdentityData.displayName}/${identityData.subIdentityName}`;
     }
   }
 
   return identityData;
+}
+
+// Utility function to process identity info fields
+function processIdentityInfo(info) {
+  return {
+    displayName: info.display.isRaw ? hexToString(info.display.asRaw.toHex()) : '',
+    legal: info.legal.isRaw ? hexToString(info.legal.asRaw.toHex()) : '',
+    web: info.web.isRaw ? hexToString(info.web.asRaw.toHex()) : '',
+    matrix: info.riot.isRaw ? hexToString(info.riot.asRaw.toHex()) : '',
+    email: info.email.isRaw ? hexToString(info.email.asRaw.toHex()) : '',
+    pgpFingerprint: info.pgpFingerprint ? hexToString(info.pgpFingerprint.toHex()) : '',
+    image: info.image.isRaw ? hexToString(info.image.asRaw.toHex()) : '',
+    twitter: info.twitter.isRaw ? hexToString(info.twitter.asRaw.toHex()) : ''
+  };
 }
 
 async function fetchDataAndUpdateCache(cache, network) {
