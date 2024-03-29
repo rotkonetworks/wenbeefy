@@ -116,14 +116,11 @@ async function fetchIdentities(addresses, providerUrl) {
   }
 }
 
-async function fetchIdentity(api, address, currentValidators) {
-  const identity = await api.query.identity.identityOf(address);
-  const isActiveValidator = currentValidators.some(validator => validator.toString() === address);
 
-  // Initialize an object to hold the identity data
+async function fetchIdentity(api, address, currentValidators) {
   let identityData = {
     address,
-    isActiveValidator,
+    isActiveValidator: currentValidators.some(validator => validator.toString() === address),
     judgements: [],
     deposit: '',
     displayName: '',
@@ -133,33 +130,36 @@ async function fetchIdentity(api, address, currentValidators) {
     email: '',
     pgpFingerprint: '',
     image: '',
-    twitter: ''
+    twitter: '',
+    isSubIdentity: false,
+    parentAddress: null,
+    subIdentityName: null // Additional field for sub-identity name
   };
 
+  const identity = await api.query.identity.identityOf(address);
+
   if (identity.isSome) {
-    const { judgements, deposit, info, superOf } = identity.unwrap();
-    const { display, legal, web, riot, email, pgpFingerprint, image, twitter } = info;
-
-    identityData = {
-      ...identityData,
-      judgements: judgements.map(j => [j[0].toString(), j[1].toString()]),
-      deposit: deposit.toString(),
-      displayName: display.isRaw ? hexToString(display.asRaw.toHex()) : '',
-      legal: legal.isRaw ? hexToString(legal.asRaw.toHex()) : '',
-      web: web.isRaw ? hexToString(web.asRaw.toHex()) : '',
-      matrix: riot.isRaw ? hexToString(riot.asRaw.toHex()) : '',
-      email: email.isRaw ? hexToString(email.asRaw.toHex()) : '',
-      pgpFingerprint: pgpFingerprint ? hexToString(pgpFingerprint.toHex()) : '',
-      image: image.isRaw ? hexToString(image.asRaw.toHex()) : '',
-      twitter: twitter.isRaw ? hexToString(twitter.asRaw.toHex()) : ''
-    };
-
-    // If superOf is not none, it means this identity is a sub-identity.
-    if (superOf && superOf.isSome) {
+    const { judgements, deposit, info } = identity.unwrap();
+    identityData.judgements = judgements.map(j => [j[0].toHuman(), j[1].toHuman()]);
+    identityData.deposit = deposit.toString();
+    identityData.displayName = info.display.isRaw ? hexToString(info.display.asRaw.toHex()) : '';
+    identityData.legal = info.legal.isRaw ? hexToString(info.legal.asRaw.toHex()) : '';
+    identityData.web = info.web.isRaw ? hexToString(info.web.asRaw.toHex()) : '';
+    identityData.matrix = info.riot.isRaw ? hexToString(info.riot.asRaw.toHex()) : '';
+    identityData.email = info.email.isRaw ? hexToString(info.email.asRaw.toHex()) : '';
+    identityData.pgpFingerprint = info.pgpFingerprint ? hexToString(info.pgpFingerprint.toHex()) : '';
+    identityData.image = info.image.isRaw ? hexToString(info.image.asRaw.toHex()) : '';
+    identityData.twitter = info.twitter.isRaw ? hexToString(info.twitter.asRaw.toHex()) : '';
+  } else {
+    const superOf = await api.query.identity.superOf(address);
+    if (superOf.isSome) {
       const [parentAddress, subIdentityData] = superOf.unwrap();
-      // Fetch the parent identity and merge the parent display name with the sub-identity name
-      const parentIdentity = await fetchIdentity(api, parentAddress.toString(), currentValidators);
-      identityData.displayName = `${parentIdentity.displayName}/${hexToString(subIdentityData.asRaw.toHex())}`;
+      identityData.isSubIdentity = true;
+      identityData.parentAddress = parentAddress.toString();
+      const parentIdentityData = await fetchIdentity(api, parentAddress.toString(), currentValidators);
+      identityData.subIdentityName = subIdentityData.isRaw ? hexToString(subIdentityData.asRaw.toHex()) : '';
+      // Format displayName to include parent identity name and sub-identity name
+      identityData.displayName = `${parentIdentityData.displayName}/${identityData.subIdentityName}`;
     }
   }
 
